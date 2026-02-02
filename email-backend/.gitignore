@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pytest_cache/
+*.mypy_cache/
+*.coverage
+*.egg-info/
+*.eggs/
+
+# Environments
+.env
+venv/
+env/
+.venv/
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Database / temporary files
+*.sqlite3
+*.db
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Uvicorn / FastAPI
+*.pid
+
+# Pytest / coverage
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
