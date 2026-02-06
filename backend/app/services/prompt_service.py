@@ -5,21 +5,27 @@ class PromptService:
     def __init__(self):
         self.client = supabase_client
 
-    async def get_latest_prompt(self, prompt_name: str = "turing_lab_main") -> Optional[Dict]:
+    async def get_latest_prompt(self, prompt_name: str = None) -> Optional[Dict]:
         """
         Fetches the latest active prompt template from 'prompt_template' table.
-        Assumes table has columns: id, name, template_content, version, is_active.
+        If prompt_name is None, fetches the latest active prompt regardless of name.
         """
         if not self.client:
             return None
 
         try:
-            # Fetch latest active prompt
-            response = self.client.table("prompt_template")\
-                .select("*")\
-                .eq("name", prompt_name)\
+            # Build query
+            query = self.client.table("prompt_template").select("*")
+            
+            # Filter by name if provided
+            if prompt_name:
+                query = query.eq("name", prompt_name)
+            
+            # Fetch latest active prompt (by version DESC, then created_at DESC)
+            response = query\
                 .eq("is_active", True)\
                 .order("version", desc=True)\
+                .order("created_at", desc=True)\
                 .limit(1)\
                 .execute()
             
