@@ -8,43 +8,41 @@ export default function Home() {
 	return (
 		<div className="flex flex-col min-h-screen overflow-x-hidden bg-white">
 			{/* Hero Section */}
-			<section className="relative min-h-screen w-full flex flex-col md:flex-row md:items-center overflow-hidden bg-white pt-20 md:pt-0">
+			<section className="relative min-h-screen w-full flex flex-col lg:flex-row items-center overflow-hidden bg-white pt-22 lg:pt-12">
 
-				{/* Globe Container - Mobile: Top Relative / Desktop: Right Absolute */}
-				{/* Mobile: h-[45vh] relative w-full. Desktop: absolute right h-full */}
-				<div className="relative w-full h-[45vh] md:absolute md:top-0 md:right-[-10%] lg:right-0 md:w-[60%] md:h-full flex items-center justify-center z-10 pointer-events-none fade-in-up order-1 md:order-none">
-					<HeroGlobe className="scale-110 md:scale-100 opacity-100" />
+				{/* Globe Container - Mobile: Top / Desktop: Right Side */}
+				<div className="relative w-full h-[35vh] lg:h-screen lg:w-1/2 flex items-center justify-center z-10 pointer-events-none fade-in-up order-1 lg:order-2 lg:mt-0">
+					<HeroGlobe className="scale-110 lg:scale-100 opacity-100" />
 				</div>
 
-				{/* Content Container - Left Aligned */}
-				{/* Mobile: Order 2, relative. Desktop: absolute/relative left */}
-				<div className="relative z-20 w-full md:w-[60%] h-auto flex flex-col justify-center px-6 md:pl-16 lg:pl-24 xl:pl-32 pr-6 pb-20 md:pb-0 order-2 md:order-none mt-[-2rem] md:mt-0">
+				{/* Content Container - Left Side */}
+				<div className="relative z-20 w-full lg:w-1/2 h-auto flex flex-col justify-center px-6 sm:px-12 lg:pl-24 xl:pl-32 pr-6 pb-20 lg:pb-0 order-2 lg:order-1">
 
 					{/* Top Left Label */}
-					<FadeIn direction="right" delay={0.1} className="mb-2 md:mb-4 text-center md:text-left">
-						<span className="text-xl md:text-3xl font-medium tracking-tight text-slate-500 block md:inline">
+					<FadeIn direction="right" delay={0.1} className="mb-0 text-center lg:text-left">
+						<span className="text-xl lg:text-3xl font-medium tracking-tight text-slate-500 block lg:inline">
 							We are
 						</span>
 					</FadeIn>
 
 					{/* Brand Name */}
-					<FadeIn direction="up" delay={0.2} className="w-full text-center md:text-left">
-						<h1 className="text-5xl md:text-8xl lg:text-9xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-violet-600 to-indigo-600 opacity-100 leading-tight pb-2 md:pb-4 md:-ml-1">
+					<FadeIn direction="up" delay={0.2} className="w-full text-center lg:text-left">
+						<h1 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary via-violet-600 to-indigo-600 opacity-100 leading-tight pb-2 lg:pb-4 lg:-ml-1 whitespace-nowrap">
 							turing Labs.
 						</h1>
 					</FadeIn>
 
 					{/* Tagline */}
-					<FadeIn direction="up" delay={0.4} className="mt-6 md:mt-8 max-w-lg mx-auto md:mx-0 text-center md:text-left">
-						<h2 className="text-lg md:text-2xl font-medium text-slate-800 leading-snug mb-4 md:mb-6">
+					<FadeIn direction="up" delay={0.4} className="mt-4 lg:mt-6 max-w-lg mx-auto lg:mx-0 text-center lg:text-left">
+						<h2 className="text-lg lg:text-2xl font-medium text-slate-800 leading-snug mb-4 lg:mb-6">
 							We build the world’s finest <span className="text-primary font-bold">intelligent systems.</span>
 						</h2>
-						<p className="text-base md:text-lg text-slate-500 mb-8 font-light leading-relaxed">
+						<p className="text-sm lg:text-lg text-slate-500 mb-6 font-light leading-relaxed">
 							We work with startups and enterprises to architect autonomous agents and custom AI solutions that make a real difference.
 						</p>
 						<Link href="/contact">
-							<Button size="lg" variant="gradient" className="rounded-full px-8 md:px-10 h-12 md:h-14 text-base md:text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-transform w-[00%] md:w-auto">
-								Start Project <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+							<Button size="lg" variant="gradient" className="rounded-full px-8 lg:px-10 h-12 lg:h-14 text-base lg:text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-transform w-full lg:w-auto">
+								Start Project <ArrowRight className="ml-2 h-4 w-4 lg:h-5 lg:w-5" />
 							</Button>
 						</Link>
 					</FadeIn>
