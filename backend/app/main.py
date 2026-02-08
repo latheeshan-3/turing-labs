@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from app.models.request import ChatRequest, EmbeddingRequest
-from app.models.response import ChatResponse, EmbeddingResponse
+from app.models.request import ChatRequest, EmbeddingRequest, PromptActivationRequest
+from app.models.response import ChatResponse, EmbeddingResponse, PromptActivationResponse
 from app.services.chat_service import chat_service
 from app.services.ingestion_pipeline import ingestion_pipeline
+from app.services.prompt_update_service import prompt_update_service
 
 app = FastAPI(title="Turing Labs Chatbot API")
 
@@ -60,3 +61,31 @@ async def embeddings_endpoint(request: EmbeddingRequest):
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+@app.post("/prompt", response_model=PromptActivationResponse)
+async def prompt_activation_endpoint(request: PromptActivationRequest):
+    """
+    Activate a prompt and create Vertex AI context cache.
+    
+    Args:
+        request: PromptActivationRequest with prompt_id
+        
+    Returns:
+        PromptActivationResponse with success state, message, and cache_name
+    """
+    try:
+        print(f"Processing prompt activation request for: {request.prompt_id}")
+        result = await prompt_update_service.activate_prompt(request.prompt_id)
+        
+        return PromptActivationResponse(
+            success=result["success"],
+            message=result["message"],
+            cache_name=result.get("cache_name")
+        )
+    except Exception as e:
+        print(f"Error in prompt activation endpoint: {e}")
+        return PromptActivationResponse(
+            success=False,
+            message=f"Internal error: {str(e)}",
+            cache_name=None
+        )

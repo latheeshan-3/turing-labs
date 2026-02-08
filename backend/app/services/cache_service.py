@@ -105,6 +105,7 @@ class CacheService:
     async def save_cached_context(self, prompt_id: str, cache_name: str, expire_time: str):
         """
         Saves the new cache_name and expire_time to 'gcp_cache' table.
+        Deactivates all existing active caches first to ensure only one cache is active.
         """
         if not self.client:
             return
@@ -113,6 +114,14 @@ class CacheService:
             return
 
         try:
+            # First, deactivate all existing active caches
+            self.client.table("gcp_cache")\
+                .update({"is_active": False})\
+                .eq("is_active", True)\
+                .execute()
+            print("Deactivated all existing active caches")
+
+            # Now insert the new cache as active
             data = {
                 "prompt_id": prompt_id,
                 "cache_name": cache_name,
