@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, Edit2, CheckCircle, XCircle, Save, X } from 'lucide-react';
+import { Plus, Edit2, CheckCircle, XCircle, Save, X, Trash2, Loader2 } from 'lucide-react';
 
 interface PromptTemplate {
 	id: string;
@@ -16,6 +16,10 @@ const Prompts = () => {
 	const [loading, setLoading] = useState(true);
 	const [editingPrompt, setEditingPrompt] = useState<Partial<PromptTemplate> | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
+
+	const [activatingPromptId, setActivatingPromptId] = useState<string | null>(null);
+
+	const hasActivePrompt = prompts.some(p => p.is_active);
 
 	useEffect(() => {
 		fetchPrompts();
@@ -39,6 +43,34 @@ const Prompts = () => {
 
 	const handleToggleActive = async (id: string, currentStatus: boolean) => {
 		try {
+			// If activating (currentStatus is false), call backend API first
+			if (!currentStatus) {
+				setActivatingPromptId(id);
+
+				const response = await fetch(
+					`${import.meta.env.VITE_BACKEND_URL}/prompt`,
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ prompt_id: id }),
+					}
+				);
+
+				const result = await response.json();
+
+				if (!result.success) {
+					console.error('Failed to activate prompt in backend:', result.message);
+					alert(`Failed to activate prompt: ${result.message}`);
+					setActivatingPromptId(null);
+					return;
+				}
+
+				console.log('Prompt activated and cached:', result.cache_name);
+			}
+
+			// Update the database status
 			const { error } = await supabase
 				.from('prompt_template')
 				.update({ is_active: !currentStatus })
@@ -48,6 +80,26 @@ const Prompts = () => {
 			fetchPrompts();
 		} catch (error) {
 			console.error('Error updating status:', error);
+			alert('Failed to update prompt status.');
+		} finally {
+			setActivatingPromptId(null);
+		}
+	};
+
+	const handleDelete = async (id: string) => {
+		if (!window.confirm('Are you sure you want to delete this prompt template?')) return;
+
+		try {
+			const { error } = await supabase
+				.from('prompt_template')
+				.delete()
+				.eq('id', id);
+
+			if (error) throw error;
+			fetchPrompts();
+		} catch (error) {
+			console.error('Error deleting prompt:', error);
+			alert('Failed to delete prompt.');
 		}
 	};
 
@@ -74,7 +126,7 @@ const Prompts = () => {
 						name: editingPrompt.name,
 						template_content: editingPrompt.template_content,
 						version: 1,
-						is_active: true
+						is_active: false
 					}]);
 				if (error) throw error;
 			}
@@ -143,10 +195,21 @@ const Prompts = () => {
 									</button>
 									<button
 										onClick={() => handleToggleActive(prompt.id, prompt.is_active)}
-										className={`p-2 hover:bg-gray-700 rounded-lg transition-colors ${prompt.is_active ? 'text-red-400' : 'text-green-400'}`}
-										title={prompt.is_active ? 'Deactivate' : 'Activate'}
+										disabled={(!prompt.is_active && hasActivePrompt) || activatingPromptId === prompt.id}
+										className={`p-2 hover:bg-gray-700 rounded-lg transition-colors ${prompt.is_active
+											? 'text-red-400'
+											: (hasActivePrompt || activatingPromptId === prompt.id ? 'text-gray-600 cursor-not-allowed' : 'text-green-400')
+											}`}
+										title={activatingPromptId === prompt.id ? 'Activating and caching...' : (prompt.is_active ? 'Deactivate' : (hasActivePrompt ? 'Only one prompt can be active' : 'Activate'))}
 									>
-										{prompt.is_active ? <XCircle size={18} /> : <CheckCircle size={18} />}
+										{activatingPromptId === prompt.id ? <Loader2 size={18} className="animate-spin" /> : (prompt.is_active ? <XCircle size={18} /> : <CheckCircle size={18} />)}
+									</button>
+									<button
+										onClick={() => handleDelete(prompt.id)}
+										className="p-2 hover:bg-gray-700 rounded-lg text-red-500 transition-colors"
+										title="Delete"
+									>
+										<Trash2 size={18} />
 									</button>
 								</div>
 							</div>
