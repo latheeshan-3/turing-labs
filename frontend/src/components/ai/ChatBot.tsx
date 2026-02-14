@@ -1,9 +1,24 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { MessageSquare, X, Send, Bot, Loader2 } from "lucide-react";
+import { X, Send, Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
+
+// Dynamically import 3D icon to avoid SSR issues with Three.js
+const ChatBotIcon3D = dynamic(
+	() =>
+		import("@/components/3d/ChatBotIcon3D").then((mod) => ({
+			default: mod.ChatBotIcon3D,
+		})),
+	{
+		ssr: false,
+		loading: () => (
+			<div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse" />
+		),
+	}
+);
 
 interface Message {
 	role: "user" | "assistant";
@@ -15,8 +30,9 @@ export function ChatBot() {
 	const [messages, setMessages] = useState<Message[]>([
 		{
 			role: "assistant",
-			content: "Hello! 👋 I'm your AI guide to Turing Labs. Ask me about our **ARP platform**, **AI automation services**, or how to start a project."
-		}
+			content:
+				"Hello! 👋 I'm your AI guide to Turing Labs. Ask me about our **ARP platform**, **AI automation services**, or how to start a project.",
+		},
 	]);
 	const [inputValue, setInputValue] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
@@ -51,11 +67,12 @@ export function ChatBot() {
 		setInputValue("");
 
 		// Add user message immediately
-		setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+		setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
 		setIsLoading(true);
 
 		try {
-			const apiUrl = process.env.NEXT_PUBLIC_CHATBOT_API_URL || "http://localhost:8000";
+			const apiUrl =
+				process.env.NEXT_PUBLIC_CHATBOT_API_URL || "http://localhost:8000";
 			const response = await fetch(`${apiUrl}/chat`, {
 				method: "POST",
 				headers: {
@@ -63,7 +80,7 @@ export function ChatBot() {
 				},
 				body: JSON.stringify({
 					conversation_id: conversationId,
-					message: userMessage
+					message: userMessage,
 				}),
 			});
 
@@ -74,10 +91,20 @@ export function ChatBot() {
 			const data = await response.json();
 
 			// Add AI response
-			setMessages(prev => [...prev, { role: "assistant", content: data.message }]);
+			setMessages((prev) => [
+				...prev,
+				{ role: "assistant", content: data.message },
+			]);
 		} catch (error) {
 			console.error("Error sending message:", error);
-			setMessages(prev => [...prev, { role: "assistant", content: "I apologize, but I'm having trouble connecting to the server right now. Please try again later." }]);
+			setMessages((prev) => [
+				...prev,
+				{
+					role: "assistant",
+					content:
+						"I apologize, but I'm having trouble connecting to the server right now. Please try again later.",
+				},
+			]);
 		} finally {
 			setIsLoading(false);
 		}
@@ -91,24 +118,36 @@ export function ChatBot() {
 	};
 
 	return (
-		<div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+		<div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 flex flex-col items-end">
+			{/* Chat Window */}
 			{isOpen && (
-				<div className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-primary/10 overflow-hidden flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-300">
+				<div className="mb-4 w-[calc(100vw-2rem)] md:w-96 max-h-[70vh] bg-white rounded-2xl shadow-2xl border border-primary/10 overflow-hidden flex flex-col animate-in slide-in-from-bottom-5 fade-in duration-300">
 					<div className="bg-gradient-to-r from-primary to-secondary p-4 flex justify-between items-center text-white">
 						<div className="flex items-center space-x-2">
 							<Bot size={20} />
 							<span className="font-semibold">Turing AI Assistant</span>
 						</div>
-						<button onClick={() => setIsOpen(false)} className="hover:bg-white/20 p-1 rounded transition-colors">
+						<button
+							onClick={() => setIsOpen(false)}
+							className="hover:bg-white/20 p-1 rounded transition-colors"
+						>
 							<X size={18} />
 						</button>
 					</div>
 
 					<div className="h-80 bg-slate-50 p-4 overflow-y-auto space-y-4">
-						<div className="text-xs text-center text-muted-foreground my-2">Today</div>
+						<div className="text-xs text-center text-muted-foreground my-2">
+							Today
+						</div>
 
 						{messages.map((msg, index) => (
-							<div key={index} className={cn("flex w-full", msg.role === "user" ? "justify-end" : "justify-start")}>
+							<div
+								key={index}
+								className={cn(
+									"flex w-full",
+									msg.role === "user" ? "justify-end" : "justify-start"
+								)}
+							>
 								<div
 									className={cn(
 										"p-3 rounded-2xl text-sm shadow-sm max-w-[85%]",
@@ -117,7 +156,13 @@ export function ChatBot() {
 											: "bg-white border border-border rounded-tl-none text-foreground"
 									)}
 								>
-									<div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />') }} />
+									<div
+										dangerouslySetInnerHTML={{
+											__html: msg.content
+												.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+												.replace(/\n/g, "<br />"),
+										}}
+									/>
 								</div>
 							</div>
 						))}
@@ -155,16 +200,24 @@ export function ChatBot() {
 				</div>
 			)}
 
-			<Button
-				onClick={() => setIsOpen(!isOpen)}
-				size="lg"
-				className={cn(
-					"h-14 w-14 rounded-full shadow-2xl shadow-primary/30 p-0 flex items-center justify-center hover:scale-105 transition-transform duration-300",
-					isOpen ? "bg-slate-800 hover:bg-slate-900" : "bg-gradient-to-r from-primary to-secondary"
-				)}
-			>
-				{isOpen ? <X /> : <MessageSquare />}
-			</Button>
+			{/* 3D Floating Bot Icon / Close Button */}
+			{isOpen ? (
+				<Button
+					onClick={() => setIsOpen(false)}
+					size="lg"
+					className="h-14 w-14 rounded-full shadow-2xl shadow-primary/30 p-0 flex items-center justify-center hover:scale-105 transition-transform duration-300 bg-slate-800 hover:bg-slate-900"
+				>
+					<X />
+				</Button>
+			) : (
+				<div className="chatbot-float-wrapper relative">
+					{/* Pulsing glow ring behind the icon */}
+					<div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/30 to-secondary/30 blur-xl animate-pulse-glow pointer-events-none" />
+					<div className="relative">
+						<ChatBotIcon3D onClick={() => setIsOpen(true)} />
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
