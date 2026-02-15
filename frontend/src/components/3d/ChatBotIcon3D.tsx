@@ -86,6 +86,76 @@ function SparkleParticle({
 	);
 }
 
+/* ─── Animated Eye Component ──────────────────────────────────── */
+function AnimatedEye({ position }: { position: [number, number, number] }) {
+	const pupilRef = useRef<THREE.Mesh>(null);
+	const glowRef = useRef<THREE.Mesh>(null);
+
+	useFrame((state) => {
+		if (pupilRef.current) {
+			const t = state.clock.elapsedTime;
+
+			// Smooth, flowing eye movement
+			const moveX = Math.sin(t * 0.5) * 0.04;
+			const moveY = Math.cos(t * 0.7) * 0.03;
+
+			pupilRef.current.position.x = moveX;
+			pupilRef.current.position.y = moveY;
+		}
+
+		if (glowRef.current) {
+			const t = state.clock.elapsedTime;
+			// Pulsing glow effect
+			const glowIntensity = 1.5 + Math.sin(t * 2) * 0.5;
+			(glowRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = glowIntensity;
+		}
+	});
+
+	return (
+		<group position={position}>
+			{/* Eye white/base */}
+			<Sphere args={[0.13, 16, 16]}>
+				<meshStandardMaterial
+					color="#e0f2fe"
+					metalness={0.2}
+					roughness={0.3}
+				/>
+			</Sphere>
+
+			{/* Outer glow */}
+			<Sphere ref={glowRef} args={[0.16, 16, 16]}>
+				<meshStandardMaterial
+					color="rgba(13, 240, 229, 1)"
+					emissive="rgba(13, 240, 229, 1)"
+					emissiveIntensity={1.5}
+					transparent
+					opacity={0.3}
+				/>
+			</Sphere>
+
+			{/* Pupil (animated) */}
+			<mesh ref={pupilRef} position={[0, 0, 0.08]}>
+				<sphereGeometry args={[0.06, 16, 16]} />
+				<meshStandardMaterial
+					color="rgba(13, 240, 229, 1)"
+					emissive="rgba(13, 240, 229, 1)"
+					emissiveIntensity={2}
+				/>
+			</mesh>
+
+			{/* Highlight dot */}
+			<mesh position={[0.03, 0.03, 0.12]}>
+				<sphereGeometry args={[0.02, 8, 8]} />
+				<meshStandardMaterial
+					color="#40f4ebff"
+					emissive="#40f4ebff"
+					emissiveIntensity={3}
+				/>
+			</mesh>
+		</group>
+	);
+}
+
 /* ─── Cute bot head ─────────────────────────────────────────── */
 function BotHead() {
 	const groupRef = useRef<THREE.Group>(null);
@@ -128,23 +198,11 @@ function BotHead() {
 					/>
 				</RoundedBox>
 
-				{/* Left eye */}
-				<Sphere args={[0.13, 16, 16]} position={[-0.28, 0.08, 0.72]}>
-					<meshStandardMaterial
-						color="#06b6d4"
-						emissive="#06b6d4"
-						emissiveIntensity={1.5}
-					/>
-				</Sphere>
+				{/* Left eye with animation */}
+				<AnimatedEye position={[-0.28, 0.08, 0.72]} />
 
-				{/* Right eye */}
-				<Sphere args={[0.13, 16, 16]} position={[0.28, 0.08, 0.72]}>
-					<meshStandardMaterial
-						color="#06b6d4"
-						emissive="#06b6d4"
-						emissiveIntensity={1.5}
-					/>
-				</Sphere>
+				{/* Right eye with animation */}
+				<AnimatedEye position={[0.28, 0.08, 0.72]} />
 
 				{/* Smile / mouth arc */}
 				<Torus
@@ -158,36 +216,6 @@ function BotHead() {
 						emissiveIntensity={0.5}
 					/>
 				</Torus>
-
-				{/* Left antenna */}
-				<group position={[-0.35, 0.72, 0]}>
-					<mesh>
-						<cylinderGeometry args={[0.03, 0.03, 0.35, 8]} />
-						<meshStandardMaterial color="#a78bfa" metalness={0.6} />
-					</mesh>
-					<Sphere args={[0.08, 12, 12]} position={[0, 0.22, 0]}>
-						<meshStandardMaterial
-							color="#22d3ee"
-							emissive="#22d3ee"
-							emissiveIntensity={2}
-						/>
-					</Sphere>
-				</group>
-
-				{/* Right antenna */}
-				<group position={[0.35, 0.72, 0]}>
-					<mesh>
-						<cylinderGeometry args={[0.03, 0.03, 0.35, 8]} />
-						<meshStandardMaterial color="#a78bfa" metalness={0.6} />
-					</mesh>
-					<Sphere args={[0.08, 12, 12]} position={[0, 0.22, 0]}>
-						<meshStandardMaterial
-							color="#22d3ee"
-							emissive="#22d3ee"
-							emissiveIntensity={2}
-						/>
-					</Sphere>
-				</group>
 
 				{/* Glow ring around the bot */}
 				<Torus args={[1.1, 0.02, 16, 64]} rotation={[Math.PI / 2, 0, 0]}>
@@ -222,7 +250,7 @@ export function ChatBotIcon3D({ onClick }: { onClick: () => void }) {
 				<ambientLight intensity={0.6} />
 				<directionalLight position={[5, 5, 5]} intensity={1.2} color="#ffffff" />
 				<pointLight position={[-3, -3, 2]} intensity={0.8} color="#7c3aed" />
-				<pointLight position={[3, 2, 3]} intensity={0.5} color="#06b6d4" />
+				<pointLight position={[3, 2, 3]} intensity={0.5} color="rgba(49, 217, 247, 1)" />
 				<BotHead />
 				<Sparkles />
 			</Canvas>
